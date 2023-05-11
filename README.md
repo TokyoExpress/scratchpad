@@ -1,2 +1,2 @@
 # scratchpad
-somewhere along the way I started coding for free
+Various pieces of code.
