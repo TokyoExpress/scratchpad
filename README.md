@@ -4,5 +4,5 @@ Various pieces of code, written mostly for my own understanding of machine learn
 
 Notebooks in `modules`.
 
-1. Backpropagation
-2. Linear Regression
+1. [Backpropagation](modules/1-backpropagation.ipynb)
+2. Linear Regression (WIP)

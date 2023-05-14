@@ -1,13 +1,15 @@
+# 1.1 Backpropagation
+
 import numpy as np
 
 class Sigmoid:
     def forward(self, x):
         self.out = 1 / (1 + np.exp(-x))
-        return self.out
-
+        return 1 / (1 + np.exp(-x))
+    
     def backward(self, grad):
         # dx = σ(x) * (1 - σ(x))
-        return grad * Sigmoid(self.out) * (np.ones(Sigmoid(self.out).shape) - Sigmoid(self.out))
+        return grad * self.out * (np.ones(self.out.shape) - self.out)
 
 class ReLU:
     def forward(self, x):
@@ -31,39 +33,39 @@ class Linear:
         return x
 
     def backward(self, grad):
-        # We need these two derivatives to update the parameters:
-        # dL / dW = (dL / d(Wx+b)) * (d(Wx+b) / dW) = x^T @ (dL / d(Wx+b))
-        # dL / db = (dL / d(Wx+b)) * (d(Wx+b) / db) = dL / d(Wx+b)
-        # and because x is the output of the previous layers, we need to pass backward:
-        # dL / dx = (dL / d(Wx+b)) * (d(Wx+b) / dx) = (dL / d(Wx+b)) @ W^T
+        
+        dL_dy = grad
+        dL_dw = self.x.T @ dL_dy
+        dL_db = np.sum(dL_dy)
+        dL_dx = dL_dy @ self.w.T
 
-        dL_dwxb = grad
-        dL_dw = self.x.T @ dL_dwxb
-        dL_dx = dL_dwxb @ self.w.T
-
-        # here we have one gradient for each item in the batch, so we can average them to update the bias
-        dL_db = np.mean(dL_dwxb)
-
-        self.w = self.w - dL_dw * 0.1
-        self.b = self.b - dL_db * 0.1
+        # gradient descent
+        self.w = self.w - dL_dw * 0.01
+        self.b = self.b - dL_db * 0.01
 
         return dL_dx
 
 class Model:
-    def __init__(self, *layers):
+    def __init__(self, layers):
         self.layers = layers
 
-    def forward(self, x):
+    def forward(self, X):
         for layer in self.layers:
-          x = layer.forward(x)
-        self.out = x
-        return x
+          X = layer.forward(X)
+        self.out = X
+        return X
 
     def backward(self, y):
         
-        # MSE loss = 0.5 * (self.out - y).T @ (self.out - y)
+        # MSE loss = 0.5 * (yhat - y).T @ (yhat - y)
+        # d(MSE) = y - yhat
+
+        loss = 0.5 * (y - self.out).T @ (y - self.out)
         dL_dy = self.out - y
+
         grad = dL_dy
 
         for layer in reversed(range(len(self.layers))):
           grad = self.layers[layer].backward(grad)
+        
+        return loss.item()
